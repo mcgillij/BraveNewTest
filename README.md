@@ -30,6 +30,6 @@ I used localforage.js for the persistent storage on the client end.
 
 Test environment setup on AWS accessible here:
 
-Resize / 3d Cube / Mobile site can be accessed http://52.23.254.116:8000/index.html
-Facebook iRate test application: http://52.23.254.116:8000/login.html (don't forget the login details above)
+Resize / 3d Cube / Mobile site can be accessed http://jm-site.s3-website-us-east-1.amazonaws.com/index.html
+Facebook iRate test application: http://jm-site.s3-website-us-east-1.amazonaws.com/login.html (don't forget the login details above)
 

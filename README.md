@@ -10,6 +10,8 @@ The resizing of the video is being done with stylesheets / div wrapper.
 
 All the video muting / autoplay / pause disabling and time setting done with the vimeo js api.
 
+Left click spins the cube, right click pans and middle click zooms.
+
 I left some code in here commented out that you can switch if you want to render a cube or a rectangle, I thought the rectangle looked cooler, so I just left it as the default for now.
 
 ## mobile.html
@@ -28,8 +30,8 @@ To access the application that reads his other friends that are loaded up as tes
 
 I used localforage.js for the persistent storage on the client end. 
 
-Test environment setup on AWS accessible here:
+## Test environment setup on AWS accessible here:
 
 Resize / 3d Cube / Mobile site can be accessed http://jm-site.s3-website-us-east-1.amazonaws.com/index.html
-Facebook iRate test application: http://jm-site.s3-website-us-east-1.amazonaws.com/login.html (don't forget the login details above)
+Facebook iRate test application: http://jm-site.s3-website-us-east-1.amazonaws.com/login.html (test user login details above)
 

@@ -13,8 +13,9 @@ top: 0;
 left: 0;
 width: 100%;
 height: 100%;
-	z-index: -1;
-	pointer-events: none;
+z-index: -1;
+// Disable pointer events so the video shows up as the background image essentially
+pointer-events: none;
 overflow: hidden;
 display: block;
 }
@@ -22,8 +23,8 @@ display: block;
 .wrapper iframe {
 width: 100vw;
 height: 56.25vw; /* Given a 16:9 aspect ratio, 9/16*100 = 56.25 */
-	min-height: 100vh;
-	min-width: 177.77vh; /* Given a 16:9 aspect ratio, 16/9*100 = 177.77 */
+min-height: 100vh;
+min-width: 177.77vh; /* Given a 16:9 aspect ratio, 16/9*100 = 177.77 */
 position: absolute;
 top: 50%;
 left: 50%;
@@ -33,8 +34,9 @@ display:block;
 
 
 #container {
-	z-index: 1;
-	pointer-events: auto;
+// Put the container above the rest of the content so you can click on it to get to the 3d cube
+z-index: 1;
+pointer-events: auto;
 width: 100%;
 height: 100%;
 }
@@ -42,7 +44,7 @@ height: 100%;
 #cover{ position:fixed; 
 top:0; 
 left:0; 
-     z-index:5; 
+z-index:5; 
 width:100%; 
 height:100%; 
 display:block; 
@@ -54,6 +56,7 @@ overflow: hidden;
 }
 </style>
 <script>
+// "Mobile" detection with a small regex
 if( /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ) {
 	//redirecting to the mobile site
 	window.location = "/mobile.html";
@@ -62,41 +65,36 @@ if( /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ) {
 
 <body> 
 <script src="https://player.vimeo.com/api/player.js"></script>
-<!-- Movable box for the mobile side of things -->
+<!-- load the vimeo lib -->
 
-
+<!-- load the Three.JS libs -->
 <script src="three.js"></script>
 <script src="TrackballControls.js"></script>
 <script src="CSS3DRenderer.js"></script>
 <script>
+// Declare the main variables that will be used with the rendering.
 var camera, scene, renderer;
 var controls;
 
-//init();
-//animate();
-
 function init() {
-
 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+	// angle the camera so you can get a clear view of the cube
 	camera.position.set( 50, 50, 160 );
-
+	// set the controls with the trackball 
 	controls = new THREE.TrackballControls( camera );
-
+	// set the rotate speed, so its bearable
 	controls.rotateSpeed = 6.0;
-	//controls.rotateSpeed = 1.0;
+	// reduce the zoom speed 
 	controls.zoomSpeed = 0.1;
 	controls.panSpeed = 0.8;
-
 	controls.noZoom = false;
 	controls.noPan = false;
-
 	controls.staticMoving = false;
 	controls.dynamicDampingFactor = 0.3;
-
 	controls.keys = [ 65, 83, 68 ];
-
+	// setup a new scene
 	scene = new THREE.Scene();
-
+	// This section is if you want to render an "actual" cube rather than a rectangle, I went with the rectanble since I don't like the black bars of playing the videos in a square.
 	/* for a square
 	   var urls = [
 	   [ 'https://player.vimeo.com/video/164479194#t=5s?autopause=0&autoplay=1&title=0&byline=0&portrait=0', 0, 0, 100, 0, 0, 0 , "vid1"],
@@ -107,7 +105,7 @@ function init() {
 	   [ 'https://player.vimeo.com/video/164479194?autopause=0&autoplay=1&title=0&byline=0&portrait=0', 0, -100, 0, 1.57, 0, 0 , "vid6"]
 	   ]
 	 */
-
+	// Rectangle video configuration, can comment this out if you want to use the square "cube" config above
 	var urls = [
 		[ 'https://player.vimeo.com/video/77149266?autopause=0&autoplay=1&title=0&byline=0&portrait=0', 0, 0, 80, 0, 0, 0 , "vid1"],
 		[ 'https://player.vimeo.com/video/77149266#t=0m05s?autopause=0&autoplay=1&title=0&byline=0&portrait=0', 80, 0, 0, 0, 1.57, 0 , "vid2"],
@@ -136,23 +134,19 @@ function init() {
 			object.scale.x = 0.25;
 			object.scale.y = 0.25;
 			scene.add( object );
-
 			}
 		 */
 		// For rectangles
 		for ( var i = 0; i < urls.length; i ++ ) {
-
 			var element = document.createElement( 'iframe' );
 			element.src = urls[ i ][ 0 ];
 			element.id = urls[ i ][ 7 ];
 			element.style.width = '640px';
-			//element.style.width = '800px';
 			element.style.height = '360px';
-			//element.style.height = '800px';
 			element.style.border = '0px';
 
-
 			var object = new THREE.CSS3DObject( element );
+			// go through the array and set the position of each video iframe
 			object.position.x = urls[ i ][ 1 ];
 			object.position.y = urls[ i ][ 2 ];
 			object.position.z = urls[ i ][ 3 ];
@@ -161,32 +155,29 @@ function init() {
 			object.rotation.z = urls[ i ][ 6 ];
 			object.scale.x = 0.25;
 			object.scale.y = 0.25;
+			// add all the videos to the scene at their positions
 			scene.add( object );
-
 		}
-
+		// use the CSS3DRenderer since rendering iframes in regular webgl is an issue
 		renderer = new THREE.CSS3DRenderer();
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		renderer.domElement.style.position = 'absolute';
 		renderer.domElement.style.top = 0;
 		document.body.appendChild( renderer.domElement );
-
 }
-
+// set a global to only start the videos once
 videos = 1;
+// main loop
 function animate() {
-
 	requestAnimationFrame( animate );
-
 	controls.update();
-
 	renderer.render( scene, camera );
 	if (videos == 1) {
 		start_videos();
 		videos = 0;
 	}
 }
-
+// plug in all the vimeo information to start the videos / disable autopausing / stagger the video start locations
 function start_videos() {
 	var player1 = new Vimeo.Player('vid1');
 	player1.setVolume(0);
@@ -237,10 +228,11 @@ function start_videos() {
 			});
 	player6.play();
 }
-
+// used to hide the main video after the user clicks the video
 function hide (element) {
 	element.style.display = 'none';
 }
+// Transition should be replaced with something fancier, but for now it gets the job done.
 function do_transition() {
 	// "transition"
 	hide(document.getElementById('iframe_holder'));

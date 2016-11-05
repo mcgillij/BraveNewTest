@@ -14,27 +14,26 @@
     console.log(response);
     // The response object is returned with a status field that lets the
     // app know the current login status of the person.
-    // Full docs on the response object can be found in the documentation
-    // for FB.getLoginStatus().
     if (response.status === 'connected') {
       // Logged into your app and Facebook.
-        testAPI();
-	//var friends = snag_friends();
+	remove_fb_button();
+        logged_in();
 	snag_friends();
 	put_logout();
-//	find_m_friends(friends);
-//	console.log("FRIENDS");
-//	console.log(friends);
 
     } else if (response.status === 'not_authorized') {
       // The person is logged into Facebook, but not your app.
       document.getElementById('status').innerHTML = 'Please log ' +
         'into this app.';
+	put_fb_button();
+	remove_logout();
     } else {
       // The person is not logged into Facebook, so we're not sure if
       // they are logged into this app or not.
       document.getElementById('status').innerHTML = 'Please log ' +
         'into Facebook to use iRate.';
+	put_fb_button();
+	remove_logout();
     }
   }
 
@@ -56,18 +55,6 @@
     version    : 'v2.8' // use graph api version 2.5
   });
 
-  // Now that we've initialized the JavaScript SDK, we call 
-  // FB.getLoginStatus().  This function gets the state of the
-  // person visiting this page and can return one of three states to
-  // the callback you provide.  They can be:
-  //
-  // 1. Logged into your app ('connected')
-  // 2. Logged into Facebook, but not your app ('not_authorized')
-  // 3. Not logged into Facebook and can't tell if they are logged into
-  //    your app or not.
-  //
-  // These three cases are handled in the callback function.
-
   FB.getLoginStatus(function(response) {
     statusChangeCallback(response);
   });
@@ -85,7 +72,7 @@
 
   // Here we run a very simple test of the Graph API after login is
   // successful.  See statusChangeCallback() for when this call is made.
-  function testAPI() {
+  function logged_in() {
     console.log('Welcome!  Fetching your information.... ');
     FB.api('/me', function(response) {
       console.log('Successful login for: ' + response.name);
@@ -96,10 +83,11 @@
 
   function snag_friends() {
 	var best_div_c = document.getElementById('best_friends');
-	FB.api('/me?fields=context.fields(mutual_friends.fields(id,name,picture)),picture', function(response) {
+	FB.api('/me?fields=context.fields(mutual_friends.fields(id,name,picture)),name,id,picture', function(response) {
 		if (response && !response.error) {
 			var main_picture = response.picture.data.url;
-			document.getElementById('yourface').innerHTML = "You: <a href=\"https://facebook.com/" + response.id + "\"><img src=\"" + main_picture + "\" alt=\"" + response.name + "\"></a><br/>";
+			var main_name = response.name;
+			document.getElementById('yourface').innerHTML = "<a href=\"https://facebook.com/" + response.id + "\"><img src=\"" + main_picture + "\" alt=\"" + response.name + "\"></a>" + main_name + " is friends with:<br/>";;
 			console.log(main_picture);
 			// friends loop
 			for ( var i = 0; i < response.context.mutual_friends.data.length; i++) {
@@ -138,16 +126,27 @@
 	function put_logout() {
 		document.getElementById('logout').innerHTML = "<input type=\"button\" onclick=\"FB.logout();location.reload();\" value=\"Logout!\"/>";
 	}
+
+	function remove_logout() {
+		document.getElementById('logout').innerHTML = "";
+	}
+
+	function put_fb_button() {
+		document.getElementById('fb_button').innerHTML = "<fb:login-button scope=\"public_profile,email,user_friends\" onlogin=\"checkLoginState();\"></fb:login-button>";
+	}
+	function remove_fb_button() {
+		document.getElementById('fb_button').innerHTML = "";
+	}
 </script>
 <h1>Welcome to iRate</h1>
-<h3>Where you can see who your "best" friends are, but means of popularity contest</h3>
-<fb:login-button scope="public_profile,email,user_friends" onlogin="checkLoginState();">
-</fb:login-button>
-
-<div id="status"></div>
+<h3>Where you can see who your "best" friends are, based on who they know.</h3>
 <div id="yourface"></div>
 <div id="best_friends"></div>
 <div id="logout"></div>
 
+<div id="status"></div>
+<div id="fb_button">
+<fb:login-button scope="public_profile,email,user_friends" onlogin="checkLoginState();"></fb:login-button>
+</div>
 </body>
 </html>

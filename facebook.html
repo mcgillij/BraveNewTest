@@ -5,148 +5,186 @@
 <meta charset="UTF-8">
 <script src="localforage.js"></script>
 <link rel='shortcut icon' href='favicon.ico' type='image/x-icon'/ >
+
+<style>
+
+html, body, div, h1, h2, a, img {
+margin: 0;
+padding: 0;
+border: 0;
+
+font: inherit;
+    vertical-align: baseline;
+}
+
+
+body {
+font-family: Futura, Arial, sans-serif;
+font-size: 14px;
+color:#333
+}
+
+#wrapper {
+width: 100%;
+margin: 0 auto;
+}
+
+#header {
+height: 75px;
+width: 100%;
+background: #141CFF;
+color: white;
+}
+
+#contentliquid {
+float: left;
+width: 100%;
+}
+
+#content {
+background: #FFFFFF;
+width: 100%;
+}
+
+
+.center {
+	text-align: center;
+}
+
+</style>
+
 </head>
 <body>
 <script>
-  // This is called with the results from from FB.getLoginStatus().
-  function statusChangeCallback(response) {
-    console.log('statusChangeCallback');
-    console.log(response);
-    // The response object is returned with a status field that lets the
-    // app know the current login status of the person.
-    if (response.status === 'connected') {
-      // Logged into your app and Facebook.
-	remove_fb_button();
-        logged_in();
-	snag_friends();
-	put_logout();
+// This is called with the results from from FB.getLoginStatus().
+function statusChangeCallback(response) {
+	console.log('statusChangeCallback');
+	console.log(response);
+	// The response object is returned with a status field that lets the
+	// app know the current login status of the person.
+	if (response.status === 'connected') {
+		// Logged into your app and Facebook.
+		remove_fb_button();
+		logged_in();
+		snag_friends();
 
-    } else if (response.status === 'not_authorized') {
-      // The person is logged into Facebook, but not your app.
-      document.getElementById('status').innerHTML = 'Please log ' +
-        'into this app.';
-	put_fb_button();
-	remove_logout();
-    } else {
-      // The person is not logged into Facebook, so we're not sure if
-      // they are logged into this app or not.
-      document.getElementById('status').innerHTML = 'Please log ' +
-        'into Facebook to use iRate.';
-	put_fb_button();
-	remove_logout();
-    }
-  }
+	} else if (response.status === 'not_authorized') {
+		// The person is logged into Facebook, but not your app.
+		document.getElementById('status').innerHTML = 'Please log into this app.';
+	} else {
+		// The person is not logged into Facebook, so we're not sure if
+		// they are logged into this app or not.
+		document.getElementById('status').innerHTML = 'Please log into Facebook to use iRate.';
+	}
+}
 
-  // This function is called when someone finishes with the Login
-  // Button.  See the onlogin handler attached to it in the sample
-  // code below.
-  function checkLoginState() {
-    FB.getLoginStatus(function(response) {
-      statusChangeCallback(response);
-    });
-  }
+// This function is called when someone finishes with the Login
+// Button.  See the onlogin handler attached to it in the sample
+// code below.
+function checkLoginState() {
+	FB.getLoginStatus(function(response) {
+		statusChangeCallback(response);
+	});
+}
 
-  window.fbAsyncInit = function() {
-  FB.init({
-	  appId      : '911173259016355',
-    cookie     : true,  // enable cookies to allow the server to access 
-                        // the session
-    xfbml      : true,  // parse social plugins on this page
-    version    : 'v2.8' // use graph api version 2.5
-  });
+window.fbAsyncInit = function() {
+	FB.init({
+appId      : '911173259016355',
+cookie     : true,  // enable cookies to allow the server to access 
+// the session
+xfbml      : true,  // parse social plugins on this page
+version    : 'v2.8' // use graph api version 2.5
+});
 
-  FB.getLoginStatus(function(response) {
-    statusChangeCallback(response);
-  });
+FB.getLoginStatus(function(response) {
+		statusChangeCallback(response);
+		});
 
-  };
+};
 
-  // Load the SDK asynchronously
-  (function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/sdk.js";
-    fjs.parentNode.insertBefore(js, fjs);
-  }(document, 'script', 'facebook-jssdk'));
+// Load the SDK asynchronously
+(function(d, s, id) {
+ var js, fjs = d.getElementsByTagName(s)[0];
+ if (d.getElementById(id)) return;
+ js = d.createElement(s); js.id = id;
+ js.src = "//connect.facebook.net/en_US/sdk.js";
+ fjs.parentNode.insertBefore(js, fjs);
+ }(document, 'script', 'facebook-jssdk'));
 
-  // Here we run a very simple test of the Graph API after login is
-  // successful.  See statusChangeCallback() for when this call is made.
-  function logged_in() {
-    console.log('Welcome!  Fetching your information.... ');
-    FB.api('/me', function(response) {
-      console.log('Successful login for: ' + response.name);
-      document.getElementById('status').innerHTML =
-        'Thanks for logging into iRate, ' + response.name + '!';
-    });
-  }
+// Here we run a very simple test of the Graph API after login is
+// successful.  See statusChangeCallback() for when this call is made.
+function logged_in() {
+	console.log('Welcome!  Fetching your information.... ');
+	FB.api('/me', function(response) {
+			console.log('Successful login for: ' + response.name);
+			document.getElementById('status').innerHTML =
+			'Thanks for logging into iRate, ' + response.name + '!';
+			});
+}
 
-  function snag_friends() {
+function snag_friends() {
+	// grab the div that we are going to fill with the friends
 	var best_div_c = document.getElementById('best_friends');
+	// do a graphapi call to find all your friends and their pictures, as most of the other fields aren't accessible without FB verification
 	FB.api('/me?fields=context.fields(mutual_friends.fields(id,name,picture)),name,id,picture', function(response) {
-		if (response && !response.error) {
+			if (response && !response.error) {
+			// map the variables to saner names
 			var main_picture = response.picture.data.url;
 			var main_name = response.name;
 			document.getElementById('yourface').innerHTML = "<a href=\"https://facebook.com/" + response.id + "\"><img src=\"" + main_picture + "\" alt=\"" + response.name + "\"></a>" + main_name + " is friends with:<br/>";;
 			console.log(main_picture);
 			// friends loop
 			for ( var i = 0; i < response.context.mutual_friends.data.length; i++) {
-				var friend = response.context.mutual_friends.data[i];
-				console.log(friend.name);
-				console.log(friend.id);
-				console.log(friend.picture.data.url);
-				FB.api('/' + friend.id + '?fields=context.fields(mutual_friends.fields(id,name,picture)),id,name,picture', function(mresponse) {
-				console.log(mresponse);
+			var friend = response.context.mutual_friends.data[i];
+			console.log(friend.name);
+			console.log(friend.id);
+			console.log(friend.picture.data.url);
+			FB.api('/' + friend.id + '?fields=context.fields(mutual_friends.fields(id,name,picture)),id,name,picture', function(mresponse) {
+					console.log(mresponse);
 					if(mresponse && !mresponse.error) { 
-						var friend_name = mresponse.name;
-						var friend_picture = mresponse.picture.data.url;
-						var friend_id = mresponse.id;
-						var context = mresponse.context;
-						var mutual_friends = context.mutual_friends;
-						var friend_data = mutual_friends.data;
-						best_div_c.innerHTML += friend_name + "<br/>";
-						best_div_c.innerHTML += "<a href=\"https://facebook.com/" + friend_id + "\"><img src=\"" + friend_picture + "\"></a>";
-						for (var j = 0; j < friend_data.length; j++) {
-							var buddy = friend_data[j];
-							var buddy_name = buddy.name;
-							var buddy_picture = buddy.picture.data.url;
-							console.log('buddy');
-							console.log(buddy.name);
-							best_div_c.innerHTML += "<a href=\"https://facebook.com/" + buddy.id + "\"><img src=\"" + buddy_picture + "\" alt=\"" + buddy.name + "\" width=35 height=35></a>";
-						}
-						best_div_c.innerHTML += "<br/>";
+					var friend_name = mresponse.name;
+					var friend_picture = mresponse.picture.data.url;
+					var friend_id = mresponse.id;
+					var context = mresponse.context;
+					var mutual_friends = context.mutual_friends;
+					var friend_data = mutual_friends.data;
+					best_div_c.innerHTML += friend_name + "<br/>";
+					best_div_c.innerHTML += "<a href=\"https://facebook.com/" + friend_id + "\"><img src=\"" + friend_picture + "\"></a>";
+					for (var j = 0; j < friend_data.length; j++) {
+					var buddy = friend_data[j];
+					var buddy_name = buddy.name;
+					var buddy_picture = buddy.picture.data.url;
+					console.log('buddy');
+					console.log(buddy.name);
+					best_div_c.innerHTML += "<a href=\"https://facebook.com/" + buddy.id + "\"><img src=\"" + buddy_picture + "\" alt=\"" + buddy.name + "\" width=35 height=35></a>";
+					}
+					best_div_c.innerHTML += "<br/>";
 
 					} 
-				});
+			});
 			}
-		}
+			}
 	});
-  }
+}
 
-	function put_logout() {
-		document.getElementById('logout').innerHTML = "<input type=\"button\" onclick=\"FB.logout();location.reload();\" value=\"Logout!\"/>";
-	}
-
-	function remove_logout() {
-		document.getElementById('logout').innerHTML = "";
-	}
-
-	function put_fb_button() {
-		document.getElementById('fb_button').innerHTML = "<fb:login-button scope=\"public_profile,email,user_friends\" onlogin=\"checkLoginState();\"></fb:login-button>";
-	}
-	function remove_fb_button() {
-		document.getElementById('fb_button').innerHTML = "";
-	}
+function remove_fb_button() {
+	document.getElementById('fb_button').innerHTML = "";
+}
 </script>
+<div id="wrapper">
+<div id="header" class="center">
 <h1>Welcome to iRate</h1>
-<h3>Where you can see who your "best" friends are, based on who they know.</h3>
-<div id="yourface"></div>
-<div id="best_friends"></div>
-<div id="logout"></div>
+<h2>Where you can see who your "best" friends are, based on who they know.</h2>
+</div>
+<div id="contentliquid"><div id="content">
+<div id="yourface"></div><br/>
+<div id="best_friends"></div><br/>
 
-<div id="status"></div>
+<div id="status"></div><br/>
 <div id="fb_button">
 <fb:login-button scope="public_profile,email,user_friends" onlogin="checkLoginState();"></fb:login-button>
+</div>
+</div></div>
 </div>
 </body>
 </html>

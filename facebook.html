@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>iRate</title>
+<meta charset="UTF-8">
+<script src="localforage.js"></script>
+<link rel='shortcut icon' href='favicon.ico' type='image/x-icon'/ >
+</head>
+<body>
+<script>
+  // This is called with the results from from FB.getLoginStatus().
+  function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+        testAPI();
+	//var friends = snag_friends();
+	snag_friends();
+//	find_m_friends(friends);
+//	console.log("FRIENDS");
+//	console.log(friends);
+
+    } else if (response.status === 'not_authorized') {
+      // The person is logged into Facebook, but not your app.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into this app.';
+    } else {
+      // The person is not logged into Facebook, so we're not sure if
+      // they are logged into this app or not.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into Facebook to use iRate.';
+    }
+  }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+	  appId      : '911173259016355',
+    cookie     : true,  // enable cookies to allow the server to access 
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.8' // use graph api version 2.5
+  });
+
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI() {
+    console.log('Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {
+      console.log('Successful login for: ' + response.name);
+      document.getElementById('status').innerHTML =
+        'Thanks for logging into iRate, ' + response.name + '!';
+    });
+  }
+
+  function snag_friends() {
+	var content = "<ul>";
+	
+	FB.api('/me?fields=context.fields(mutual_friends.fields(id,name,picture)),picture', function(response) {
+		if (response && !response.error) {
+			var main_picture = response.picture.data.url;
+			console.log(main_picture);
+
+
+			// friends loop
+			for ( var i = 0; i < response.context.mutual_friends.data.length; i++) {
+				var friend = response.context.mutual_friends.data[i];
+				console.log(friend.name);
+				console.log(friend.id);
+				console.log(friend.picture.data.url);
+				content += "<li>";
+				content += friend.name + ", " + friend.id + ", <img src=\"" + friend.picture.data.url + "\">";
+				var best_div_content = document.getElementById('best_friends');
+				best_div_content.innerHTML += "<ul>";
+				FB.api('/' + friend.id + '?fields=context.fields(mutual_friends.fields(id,name,picture)),id,name,picture', function(mresponse) {
+				console.log(mresponse);
+				//FB.api( "/" + friend.id, { "fields": "context.fields(mutual_friends)" }, function (mresponse) {
+				//FB.api( "/" + friend.id, { "fields": "context.fields(mutual_friends)" }, function (mresponse) {
+					if(mresponse && !mresponse.error) { 
+						var friend_name = mresponse.name;
+						var friend_picture = mresponse.picture.data.url;
+						var context = mresponse.context;
+						var mutual_friends = context.mutual_friends;
+						var friend_data = mutual_friends.data;
+						best_div_content.innerHTML += "<li><img src=\"" + friend_picture + "\">";
+						for (var j = 0; j < friend_data.length; j++) {
+							var buddy = friend_data[j];
+							var buddy_name = buddy.name;
+							var buddy_picture = buddy.picture.data.url;
+							console.log('buddy');
+							console.log(buddy.name);
+							best_div_content.innerHTML += "Buddy Name: " + buddy_name;
+							best_div_content.innerHTML += "<img src=\"" + buddy_picture + "\">";
+						}
+						best_div_content.innerHTML += "</li>";
+
+					} 
+					best_div_content.innerHTML += "</ul>";
+				});
+				content += "</li>";
+
+
+			}
+//			document.getElementById('best_friends').innerHTML = content;
+			content += "</ul>";
+			console.log("CONTENT");
+			console.log(content);
+			document.getElementById('friends_div').innerHTML = content;
+		} else {
+			Alert("Response error");
+		}
+	});
+  }
+
+  function get_mutual_friends(friend_id){
+  	console.log("in get mutual friends");
+	console.log(friend_id);
+	FB.api(
+		"/" + friend_id,
+		{ "fields": "context.fields(mutual_friends)" }, function (mresponse) {
+			if(mresponse && !mresponse.error) { 
+				var context = mresponse.context;
+				var mutual_friends = context.mutual_friends;
+				var friend_data = mutual_friends.data;
+				var results = new Array();
+				var count = 0;
+				for (var j = 0; j < friend_data.length; j++) {
+					var buddy = friend_data[j];
+					console.log('buddy');
+					console.log(buddy.name);
+					results.push(buddy.name);
+					count++;
+				}
+				console.log("Results array");
+				console.log(results);
+				return count;
+			} 
+		}
+	);
+  }
+
+  function snag_friends2() {
+	var content = "<ul>";
+        FB.api('/me/friends?fields=id,name,picture', function(response){
+		if(response && !response.error) {
+			for(var i = 0; i < response.data.length; i++) {
+				var obj = response.data[i];
+				content += "<li>" + obj.name + ":" + obj.id;
+				content += "<img src=\"" + obj.picture.data.url + "\"> ";
+				FB.api(
+					"/" + obj.id,
+					{ "fields": "context.fields(mutual_friends)" }, function (mresponse) {
+						if(mresponse && !mresponse.error) {
+							var context = mresponse.context;
+							var mutual_friends = context.mutual_friends;
+							var friend_data = mutual_friends.data;
+							content += "Also friends with: ";
+							for (var j = 0; j < friend_data.length; j++) {
+								var buddy = friend_data[j];
+								content += buddy.name;
+							}
+						}
+					}
+				);
+				content += "</li>";
+
+			}
+		}
+	content += "</ul>";
+	document.getElementById('friends').innerHTML = content;
+        });
+
+  }
+
+  function find_m_friends(friends_list) {
+	var friend_array = [];
+	console.log("IN M FRIENDS");
+	console.log(friends_list);
+//	for (var i = 0; i < friends_list.length; i++) {
+	for (var friend of friends_list) {
+		alert(friend);
+//		var friend = friends_list[i];
+		console.log("FRIEND");
+		console.log(friend);
+		FB.api( "/" + friend.id,
+			{ "fields": "context.fields(mutual_friends)" }, function (mresponse) {
+				if(mresponse && !mresponse.error) {
+					var context = mresponse.context;
+					var mutual_friends = context.mutual_friends;
+					var friend_data = mutual_friends.data;
+					for (var j = 0; j < friend_data.length; j++) {
+						var buddy = friend_data[j];
+						console.log("Buddy with: " + buddy.name);
+					}
+				}
+			});
+//	}
+	}
+
+  }
+
+
+
+  function snag_friends3() {
+  	var friends = [];
+        FB.api('/me/friends?fields=id,name,picture', function(response){
+		if(response && !response.error) {
+			for(var i = 0; i < response.data.length; i++) {
+				var obj = response.data[i];
+				console.log(obj.id);
+				console.log(obj.name);
+				friends.push(obj);
+
+			}
+		}
+        });
+	console.log("Friends ARRAY");
+	console.log(friends);
+	console.log("about to enter for loop");
+	for (var j = 0; j < friends.length; j++) {
+		var friend = friends[j];
+		console.log(friend.picture.data.url);
+	}
+
+
+//	return friends;
+
+  }
+
+</script>
+
+<!--
+  Below we include the Login Button social plugin. This button uses
+  the JavaScript SDK to present a graphical Login button that triggers
+  the FB.login() function when clicked.
+-->
+
+<fb:login-button scope="public_profile,email,user_friends" onlogin="checkLoginState();">
+</fb:login-button>
+
+<div id="status">
+</div>
+<h3>Friends list from facebook that also have access to the iRate application</h3>
+<div id="friends_div"></div>
+Best:
+<div id="best_friends"></div>
+<input type="button" onclick="FB.logout();location.reload();" value="Logout!"/>
+
+</body>
+</html>

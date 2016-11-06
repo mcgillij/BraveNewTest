@@ -3,6 +3,7 @@
 <head>
 <title>iRate</title>
 <meta charset="UTF-8">
+<!-- load our storage lib -->
 <script src="localforage.js"></script>
 </head>
 <body>
@@ -17,9 +18,11 @@
     // for FB.getLoginStatus().
     if (response.status === 'connected') {
       // Logged into your app and Facebook.
-      testAPI();
+	testAPI();
+	// call the function that does the GraphAPI calls to fetch your friends
 	snag_friends();
 	console.log("outputing all db entries");
+	// snag all the records that are in the key value database
 	get_all_values();
     } else if (response.status === 'not_authorized') {
       // The person is logged into Facebook, but not your app.
@@ -41,7 +44,7 @@
       statusChangeCallback(response);
     });
   }
-
+  // Put your application ID here, I removed mine so it doesn't get published on github.
   window.fbAsyncInit = function() {
   FB.init({
 	  appId      : '{put yer app id here}',
@@ -88,7 +91,7 @@
         'Thanks for logging into iRate, ' + response.name + '!';
     });
   }
-
+  // This function parses through the GraphAPI results and creates the basic UI that it will spit out into the friends div
   function snag_friends() {
         FB.api('/me/friends', function(response){
             console.log(response);
@@ -108,13 +111,14 @@
 		document.getElementById('friends').innerHTML = content;
         });
   }
-
+// Store the record into our key value database
 function store_values(name, rating) {
 	localforage.setItem(name, rating);
 	console.log("Stored the value", name);
+	// update the view
 	get_all_values();
 }
-
+// get all the results from the database and update the view.
 function get_all_values() {
 	var friends_list = "<ul>";
 	localforage.iterate(function(value, key, iterationNumber) {

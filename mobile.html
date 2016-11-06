@@ -9,6 +9,7 @@
 body {
 	background-color: grey;
 }
+// The box that will move around with the accelorometer needs a position attribute, so we set one.
 #weee {
 position: absolute;
 }
@@ -16,75 +17,76 @@ position: absolute;
 </head>
 <body>
 <script src="https://player.vimeo.com/api/player.js"></script>
+	
 <div id="weee">
 <div id="placeholder"></div>
 <div id="video"></div>
 </div>
 <script>
-
+// Mobile detection with a regex
 if( /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ) {
-
+	// set some vimeo api variables that will be used to load the video title, we hide the video, since its not supposed to be usable for the test.
 	options = { id: 77149266,
 		width: 300};
 	var player = new Vimeo.Player('video', options);
 
 	player.getVideoTitle().then(function(title) {
-			document.getElementById('video').innerHTML = "";
-			document.getElementById('placeholder').innerHTML = "<p><h3>" + title + '</h3><img src="giphy.gif"></img></p>';
+			document.getElementById('video').innerHTML = ""; // blow up the video
+			// put the animated gif of the video in there
+			document.getElementById('placeholder').innerHTML = "<p><h3>" + title + '</h3><img src="giphy.gif"></img></p>'; 
 			console.log('title: ', title);
 			});
-
+	// setup coorinates for use with the accelerometer
 	var x = 0, y = 0,
-	    vx = 0, vy = 0,
-	    ax = 0, ay = 0;
+	// velocity
+	vx = 0, vy = 0,
+	// accel
+	ax = 0, ay = 0;
+	// grab our movable div
 	var movable = document.getElementById("weee");
-
+	// start taking a peek for motion events
 	if (window.DeviceMotionEvent != undefined) {
+		// on motion event start here
 		window.ondevicemotion = function(e) {
 			ax = event.accelerationIncludingGravity.x * 5;
 			ay = event.accelerationIncludingGravity.y * 5;
 		}
-
+		// set your refresh interval and deal with flipping your phone on its side.
 		setInterval( function() {
 				var landscapeOrientation = window.innerWidth/window.innerHeight > 1;
+				// your phone is now sideways
 				if ( landscapeOrientation) {
 				vx = vx + ay;
 				vy = vy + ax;
 				} else {
+				// not anymore
 				vy = vy - ay;
 				vx = vx + ax;
 				}
+				// gravity
 				vx = vx * 0.98;
 				vy = vy * 0.98;
+			
 				y = parseInt(y + vy / 50);
 				x = parseInt(x + vx / 50);
-
+				// do the bounding box check
 				BBoxCheck();
-
+				// move your div around
 				movable.style.top = y + "px";
 				movable.style.left = x + "px";
-
 				}, 25);
 	} 
-
-
+	// Here we are declaring our bounding box check so the movable box doesn't clip through the sides
 	function BBoxCheck(){
 		if (x<0) { x = 0; vx = -vx; }
 		if (y<0) { y = 0; vy = -vy; }
 		if (x>document.documentElement.clientWidth-20) { x = document.documentElement.clientWidth-20; vx = -vx; }
 		if (y>document.documentElement.clientHeight-20) { y = document.documentElement.clientHeight-20; vy = -vy; }
-
 	}
 
 } else {
-	options = { id: 77149266,
-		width: 300};
-	var player = new Vimeo.Player('video', options);
-
-	player.getVideoTitle().then(function(title) {
-			document.getElementById('placeholder').innerHTML = "<p><h3>" + title + '</h3></p>';
-			console.log('title: ', title);
-			});
+	// not on a mobile browser, should probably just redirect back to the main page.
+	window.location = "/index.html";
 }
 </script>
 </body>

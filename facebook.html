@@ -7,7 +7,6 @@
 <link rel='shortcut icon' href='favicon.ico' type='image/x-icon'/ >
 
 <style>
-
 html, body, div, h1, h2, a, img {
 margin: 0;
 padding: 0;
@@ -30,7 +29,7 @@ margin: 0 auto;
 }
 
 #header {
-height: 75px;
+height: 50px;
 width: 100%;
 background: #141CFF;
 color: white;
@@ -45,7 +44,6 @@ width: 100%;
 background: #FFFFFF;
 width: 100%;
 }
-
 
 .center {
 	text-align: center;
@@ -89,11 +87,11 @@ function checkLoginState() {
 
 window.fbAsyncInit = function() {
 	FB.init({
-appId      : '911173259016355',
-cookie     : true,  // enable cookies to allow the server to access 
-// the session
-xfbml      : true,  // parse social plugins on this page
-version    : 'v2.8' // use graph api version 2.5
+	appId      : '911173259016355',
+	cookie     : true,  // enable cookies to allow the server to access 
+	// the session
+	xfbml      : true,  // parse social plugins on this page
+	version    : 'v2.8' // use graph api version 2.5
 });
 
 FB.getLoginStatus(function(response) {
@@ -116,10 +114,9 @@ FB.getLoginStatus(function(response) {
 function logged_in() {
 	console.log('Welcome!  Fetching your information.... ');
 	FB.api('/me', function(response) {
-			console.log('Successful login for: ' + response.name);
-			document.getElementById('status').innerHTML =
-			'Thanks for logging into iRate, ' + response.name + '!';
-			});
+		console.log('Successful login for: ' + response.name);
+		document.getElementById('status').innerHTML = 'Thanks for logging into iRate, ' + response.name + '!';
+	});
 }
 
 function snag_friends() {
@@ -127,43 +124,52 @@ function snag_friends() {
 	var best_div_c = document.getElementById('best_friends');
 	// do a graphapi call to find all your friends and their pictures, as most of the other fields aren't accessible without FB verification
 	FB.api('/me?fields=context.fields(mutual_friends.fields(id,name,picture)),name,id,picture', function(response) {
-			if (response && !response.error) {
+		if (response && !response.error) {
 			// map the variables to saner names
+			console.log(response);
 			var main_picture = response.picture.data.url;
 			var main_name = response.name;
-			document.getElementById('yourface').innerHTML = "<a href=\"https://facebook.com/" + response.id + "\"><img src=\"" + main_picture + "\" alt=\"" + response.name + "\"></a>" + main_name + " is friends with:<br/>";;
+			var total_count = response.context.mutual_friends.summary.total_count; // used to calculate friend value
+			console.log("TOTAL Count: " + total_count);
+			document.getElementById('yourface').innerHTML = "<p><a href=\"https://facebook.com/" + response.id + "\"><img src=\"" + main_picture + "\" alt=\"" + response.name + "\"></a> " + main_name + " is friends with:</p>";;
 			console.log(main_picture);
 			// friends loop
 			for ( var i = 0; i < response.context.mutual_friends.data.length; i++) {
-			var friend = response.context.mutual_friends.data[i];
-			console.log(friend.name);
-			console.log(friend.id);
-			console.log(friend.picture.data.url);
-			FB.api('/' + friend.id + '?fields=context.fields(mutual_friends.fields(id,name,picture)),id,name,picture', function(mresponse) {
+				var friend = response.context.mutual_friends.data[i];
+				console.log(friend.name);
+				console.log(friend.id);
+				console.log(friend.picture.data.url);
+				FB.api('/' + friend.id + '?fields=context.fields(mutual_friends.fields(id,name,picture)),id,name,picture', function(mresponse) {
 					console.log(mresponse);
 					if(mresponse && !mresponse.error) { 
-					var friend_name = mresponse.name;
-					var friend_picture = mresponse.picture.data.url;
-					var friend_id = mresponse.id;
-					var context = mresponse.context;
-					var mutual_friends = context.mutual_friends;
-					var friend_data = mutual_friends.data;
-					best_div_c.innerHTML += friend_name + "<br/>";
-					best_div_c.innerHTML += "<a href=\"https://facebook.com/" + friend_id + "\"><img src=\"" + friend_picture + "\"></a>";
-					for (var j = 0; j < friend_data.length; j++) {
-					var buddy = friend_data[j];
-					var buddy_name = buddy.name;
-					var buddy_picture = buddy.picture.data.url;
-					console.log('buddy');
-					console.log(buddy.name);
-					best_div_c.innerHTML += "<a href=\"https://facebook.com/" + buddy.id + "\"><img src=\"" + buddy_picture + "\" alt=\"" + buddy.name + "\" width=35 height=35></a>";
-					}
-					best_div_c.innerHTML += "<br/>";
+						var friend_name = mresponse.name;
+						var friend_picture = mresponse.picture.data.url;
+						var friend_id = mresponse.id;
+						var context = mresponse.context;
+						var mutual_friends = context.mutual_friends;
+						var friend_data = mutual_friends.data;
+						var friends_in_common = mutual_friends.data.length;
+						best_div_c.innerHTML += friend_name + ": <br/><p>";
+						best_div_c.innerHTML += "<a href=\"https://facebook.com/" + friend_id + "\"><img src=\"" + friend_picture + "\"></a>";
+						for (var j = 0; j < friend_data.length; j++) {
+							var buddy = friend_data[j];
+							var buddy_name = buddy.name;
+							var buddy_picture = buddy.picture.data.url;
+							console.log('buddy');
+							console.log(buddy.name);
+							best_div_c.innerHTML += "<a href=\"https://facebook.com/" + buddy.id + "\"><img src=\"" + buddy_picture + "\" alt=\"" + buddy.name + "\" width=35 height=35></a>";
+						}
+						// Determine buddy score
+						var friend_value_difference = total_count - (friends_in_common + 1);
+						var friend_value = (total_count - friend_value_difference) / total_count * 100;
+						// get rid of trailing chars
+						best_div_c.innerHTML += "<br/>Rating: " +  friend_value.toFixed(0);
+						best_div_c.innerHTML += "</p>";
 
 					} 
-			});
+				});
 			}
-			}
+		}
 	});
 }
 
@@ -176,7 +182,7 @@ function remove_fb_button() {
 <h1>Welcome to iRate</h1>
 <h2>Where you can see who your "best" friends are, based on who they know.</h2>
 </div>
-<div id="contentliquid"><div id="content">
+<div id="contentliquid" class="center"><div id="content">
 <div id="yourface"></div><br/>
 <div id="best_friends"></div><br/>
 
